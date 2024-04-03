@@ -10,7 +10,7 @@ def inserirValor():
     data = input('Data (y-m-d): ')
     nome = input('Nome: ')
     quantidade = int(input('Quantidade: '))
-    preco = float(input('Preço: '))
+    preco = float(input('Preço (em centavos): '))
     bean = {
         "data": data, 
         "nome": nome, 
@@ -21,19 +21,24 @@ def inserirValor():
     print(f'Registro #{id} inserido com sucesso')
 
 def inserirValores():
+    erros = []
     nomeArquivo = input('Nome do arquivo: ') # 'extratos/Poupança_Financias - Compras Ativos.csv' 
     with open(nomeArquivo, 'r') as arquivo:
         linhas = arquivo.readlines()[1:]
         for linha in linhas:
-            lista = linha.strip().split(';')
-            dia, mes, ano = lista[0].split('/')
-            bean = {
-                "data": f'{ano}-{mes}-{dia}', 
-                "nome": lista[2],
-                "quantidade": lista[4],
-                "preco": float(lista[5].replace(',', '.')) * 100
-            }
-            inserir(daoValores, bean)
+            try:
+                lista = linha.strip().split(';')
+                dia, mes, ano = lista[0].split('/')
+                bean = {
+                    "data": f'{ano}-{mes}-{dia}', 
+                    "nome": lista[2],
+                    "quantidade": lista[3],
+                    "preco": float(lista[4].replace(',', '.')) * 100
+                }
+                inserir(daoValores, bean)
+            except Error as e:
+                erros.append(e)
+        print(f'Erros: {erros}')
 
 def inserir(dao, bean):
     try:
@@ -61,8 +66,11 @@ def inserirMovimentacoes():
         for linha in linhas:
             lista = linha.strip().split(';')
             dia, mes, ano = lista[0].split('/')
-            valor = float(lista[2].replace('.', '').replace(',', '.')) * 100
-            saldo = float(lista[3].replace('.', '').replace(',', '.')) * 100
+            valor = float(lista[3].replace('.', '').replace(',', '.')) * 100
+            try:
+                saldo = float(lista[4].replace('.', '').replace(',', '.')) * 100
+            except:
+                saldo = 0
             bean = {
                 "data": f'{ano}-{mes}-{dia}', 
                 "nome": lista[1],
